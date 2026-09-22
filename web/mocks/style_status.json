@@ -1,0 +1,6 @@
+{
+  "not_started": { "state": "not_started", "pairs_count": 0, "window_days": 30, "updated_at": null, "error": null },
+  "running": { "state": "running", "pairs_count": 41, "window_days": 30, "updated_at": "2026-09-20T08:58:00Z", "error": null },
+  "ready": { "state": "ready", "pairs_count": 142, "window_days": 30, "updated_at": "2026-09-20T09:00:00Z", "error": null },
+  "failed": { "state": "failed", "pairs_count": 0, "window_days": 30, "updated_at": "2026-09-20T08:59:00Z", "error": "Gmail returned 429 while reading recent replies." }
+}

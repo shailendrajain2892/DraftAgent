@@ -1,0 +1,9 @@
+{
+  "UNAUTHENTICATED": { "status": 401, "error": { "code": "UNAUTHENTICATED", "message": "Please sign in with Google." } },
+  "AUTH_EXPIRED": { "status": 401, "error": { "code": "AUTH_EXPIRED", "message": "Please sign in with Google again." } },
+  "NOT_FOUND": { "status": 404, "error": { "code": "NOT_FOUND", "message": "That thread no longer exists." } },
+  "RUN_STATE_CONFLICT": { "status": 409, "error": { "code": "RUN_STATE_CONFLICT", "message": "This run is not waiting for an answer." } },
+  "GMAIL_RATE_LIMITED": { "status": 429, "error": { "code": "GMAIL_RATE_LIMITED", "message": "Gmail is rate limiting us." } },
+  "UPSTREAM_ERROR": { "status": 502, "error": { "code": "UPSTREAM_ERROR", "message": "Gmail or OpenAI did not respond." } },
+  "RUN_TIMEOUT": { "status": 504, "error": { "code": "RUN_TIMEOUT", "message": "The run took too long." } }
+}
