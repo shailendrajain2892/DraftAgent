@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import os
 import uuid
 
 from fastapi import APIRouter, BackgroundTasks, Request
@@ -15,6 +16,13 @@ from ..seed.job import run_seed
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 
+# Local-dev OAuth allowances. When the cookie is not Secure we are on http://localhost:
+# oauthlib refuses non-HTTPS token exchange, and Google often returns a slightly
+# different scope set (adds openid, reorders) which oauthlib treats as an error.
+if not get_settings().cookie_secure:
+    os.environ.setdefault("OAUTHLIB_INSECURE_TRANSPORT", "1")
+    os.environ.setdefault("OAUTHLIB_RELAX_TOKEN_SCOPE", "1")
+
 
 def _build_flow(settings, state: str | None = None) -> Flow:
     client_config = {
@@ -26,11 +34,14 @@ def _build_flow(settings, state: str | None = None) -> Flow:
             "redirect_uris": [settings.oauth_redirect_uri],
         }
     }
+    # PKCE off: this is a confidential web client (has client_secret), so PKCE is
+    # optional. Disabling it avoids threading the code_verifier through the session.
     return Flow.from_client_config(
         client_config,
         scopes=settings.gmail_scopes,
         state=state,
         redirect_uri=settings.oauth_redirect_uri,
+        autogenerate_code_verifier=False,
     )
 
 

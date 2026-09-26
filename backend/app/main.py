@@ -7,6 +7,7 @@ stored on `app.state` for the runs router. Swap `agent.stub` for Yashshree's rea
 
 from __future__ import annotations
 
+import logging
 import os
 
 from fastapi import FastAPI, Request
@@ -63,7 +64,11 @@ def create_app() -> FastAPI:
     app.add_exception_handler(DraftAgentError, draftagent_exception_handler)
 
     @app.exception_handler(Exception)
-    async def _unhandled(_: Request, exc: Exception) -> JSONResponse:  # noqa: ANN202
+    async def _unhandled(request: Request, exc: Exception) -> JSONResponse:  # noqa: ANN202
+        # Log the full traceback server-side; return the Contract A error shape to clients.
+        logging.getLogger("draftagent").exception(
+            "Unhandled error on %s %s", request.method, request.url.path
+        )
         return JSONResponse(
             status_code=502,
             content=error_body("UPSTREAM_ERROR", "Unexpected server error."),
