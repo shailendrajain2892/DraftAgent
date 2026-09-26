@@ -66,6 +66,34 @@ uv run ruff check .
    (OpenAI if `OPENAI_API_KEY` is set, else a stub body) and **saves it as a Gmail draft**.
    Nothing is ever sent.
 
+## Deploy (Fly.io)
+
+Deployed as a single machine with a persistent volume. Config is in `Dockerfile` and
+`fly.toml`. Live: https://draftagent-backend.fly.dev
+
+First-time setup:
+
+```bash
+cd backend
+flyctl apps create <unique-app-name>          # or reuse draftagent-backend
+flyctl volumes create draftagent_data --region sin --size 1
+# secrets (never committed): pull the sensitive ones from .env, add prod redirect + session
+{
+  grep -E '^(GOOGLE_CLIENT_ID|GOOGLE_CLIENT_SECRET|OPENAI_API_KEY|OPENAI_CHAT_MODEL|OPENAI_EMBED_MODEL)=' .env
+  echo "OAUTH_REDIRECT_URI=https://<app>.fly.dev/auth/google/callback"
+  echo "SESSION_SECRET=$(openssl rand -hex 32)"
+} | flyctl secrets import
+flyctl deploy --remote-only
+```
+
+Then add `https://<app>.fly.dev/auth/google/callback` to the Google OAuth client's
+authorized redirect URIs. Redeploy anytime with `flyctl deploy --remote-only`.
+
+Notes specific to this app:
+- One machine / one worker on purpose — sessions and tokens are in memory.
+- `STYLE_STORE_DIR` and the SQLite checkpointer live on the `/data` volume so they
+  survive redeploys. `COOKIE_SECURE=true` in prod (set in `fly.toml`).
+
 ## Notes
 
 - `user_id` (your email) always comes from the session cookie, never the request body.

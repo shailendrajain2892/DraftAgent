@@ -60,6 +60,9 @@ def login(request: Request):
 
 @router.get("/google/callback")
 def callback(request: Request, background: BackgroundTasks, code: str = "", state: str = ""):
+    # A bare visit to the callback (no code) isn't part of the flow — send them to login.
+    if not code:
+        return RedirectResponse("/auth/google/login", status_code=302)
     settings = get_settings()
     saved_state = request.session.get("oauth_state")
     flow = _build_flow(settings, state=saved_state)
