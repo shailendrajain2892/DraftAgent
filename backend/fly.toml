@@ -1,0 +1,31 @@
+# Fly.io config for the DraftAgent backend.
+# `app` must be globally unique — change it if `draftagent-backend` is taken.
+app = "draftagent-backend"
+primary_region = "sin"  # Singapore (nearest to India); see: fly platform regions
+
+[build]
+
+[env]
+  # Persistent files live on the mounted volume (see [mounts]).
+  STYLE_STORE_DIR = "/data/style_store"
+  CHECKPOINTER_DB = "/data/checkpoints.sqlite"
+  # Deployed over HTTPS, so the session cookie must be Secure.
+  COOKIE_SECURE = "true"
+  # OAUTH_REDIRECT_URI, SESSION_SECRET, GOOGLE_* and OPENAI_API_KEY are set as
+  # secrets (fly secrets set ...), never committed here.
+
+[http_service]
+  internal_port = 8080
+  force_https = true
+  # Keep exactly one machine alive: sessions/tokens are in-memory.
+  auto_stop_machines = false
+  auto_start_machines = true
+  min_machines_running = 1
+
+[[mounts]]
+  source = "draftagent_data"
+  destination = "/data"
+
+[[vm]]
+  size = "shared-cpu-1x"
+  memory = "512mb"
