@@ -1,6 +1,6 @@
-# Fly.io config for the DraftAgent backend.
-# `app` must be globally unique — change it if `draftagent-backend` is taken.
-app = "draftagent-backend"
+# Fly.io config for DraftAgent (UI + API served from one app).
+# `app` must be globally unique.
+app = "draftagent"
 primary_region = "sin"  # Singapore (nearest to India); see: fly platform regions
 
 [build]
