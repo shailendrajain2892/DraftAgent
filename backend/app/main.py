@@ -1,9 +1,9 @@
 """FastAPI app factory: session middleware, CORS, routers, error handlers, static UI.
 
-Contract D wiring: the agent module and compiled graph are built once at startup and
-stored on `app.state` for the runs router. When an OpenAI key is configured we use the
-real LangGraph agent (`app.agent.graph`) driven by the Gmail tools; otherwise we fall
-back to `app.agent.stub` (used by contract tests / keyless environments).
+Contract D wiring: the agent module and compiled graph are stored on `app.state` for the
+runs router. The real LangGraph agent (`app.agent.graph`) is driven by the Gmail tools +
+ChatOpenAI. When no OpenAI key is configured (CI / contract tests) the compiled graph is
+None and the tests monkeypatch the Contract D functions.
 """
 
 from __future__ import annotations
@@ -42,16 +42,16 @@ def _build_real_graph(settings, checkpointer):
 
 def _select_agent(settings):
     """Baseline (synchronous) Contract D wiring, always set so tests never hit an unset
-    app.state. Real agent (in-memory saver) when OPENAI_API_KEY is set; else the stub.
+    app.state. Real graph (in-memory saver) when OPENAI_API_KEY is set; otherwise the
+    compiled graph is None (CI/tests, which monkeypatch start_run/resume_run).
 
     In production the lifespan upgrades the real graph to a durable SQLite checkpointer.
     """
+    from .agent import graph as agent_module
+
     if settings.openai_api_key:
         return _build_real_graph(settings, checkpointer=None)
-
-    from .agent import stub as agent_module
-
-    return agent_module, agent_module.build_graph(tools=None, llm=None, checkpointer=None)
+    return agent_module, None
 
 
 @asynccontextmanager
