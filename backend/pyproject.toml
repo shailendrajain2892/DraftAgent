@@ -1,7 +1,7 @@
 [project]
 name = "draftagent-backend"
 version = "0.1.0"
-description = "DraftAgent FastAPI backend: OAuth, Gmail MCP tools, style seed, run endpoints"
+description = "DraftAgent backend: FastAPI (OAuth, Gmail tools, style seed, runs) + LangGraph agent"
 readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [
@@ -18,21 +18,24 @@ dependencies = [
     "google-api-python-client>=2.130",
     "beautifulsoup4>=4.12",
     "httpx>=0.27",
+    # LangGraph agent (Spec 03). Pinned by the agent owner.
+    "langgraph==1.2.12",
+    "langgraph-checkpoint==4.2.0",
+    "langgraph-checkpoint-sqlite>=2.0",
+    "langchain-core==1.6.4",
+    "langchain-openai==1.6.3",
+    "openai>=1.40",
 ]
 
 [project.optional-dependencies]
-agent = [
-    "langgraph>=0.2",
-    "langgraph-checkpoint-sqlite>=2.0",
-    "langchain-mcp-adapters>=0.1",
-    "mcp>=1.2",
-    "openai>=1.40",
-]
 dev = [
     "ruff>=0.6",
     "pytest>=8.2",
     "pytest-asyncio>=0.23",
 ]
+# Agent deps are now core (see dependencies above). Kept as an empty alias so
+# existing `pip install -e ".[agent]"` invocations (Dockerfile) keep working.
+agent = []
 
 [tool.ruff]
 line-length = 100
@@ -42,8 +45,9 @@ target-version = "py311"
 select = ["E", "F", "I", "UP", "B"]
 
 [tool.pytest.ini_options]
-asyncio_mode = "auto"
 testpaths = ["tests"]
+asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "function"
 
 [build-system]
 requires = ["hatchling"]
