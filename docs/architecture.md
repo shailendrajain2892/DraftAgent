@@ -4,6 +4,9 @@ This document describes the system as built. The authoritative contracts live in
 [`specs/00_shared_overview_and_contracts.md`](specs/00_shared_overview_and_contracts.md);
 per-component detail is in `specs/01`–`04`.
 
+Interactive architecture diagram (Lucid, icon-based):
+https://lucid.app/lucidchart/eab9c7be-5262-4fb7-87fb-cd6c1b5a605b/view
+
 ## Components
 
 | Component | Where | Responsibility |
@@ -37,6 +40,46 @@ stateDiagram-v2
 - **save_draft** — calls `create_draft`; auth/quota errors escape as 401/429, others → 502.
 
 `run_id = "{user_id}:{gmail_thread_id}:{nonce}"` and is also LangGraph's `thread_id`.
+
+### Graph detail — nodes, tools, LLM, checkpointer
+
+```mermaid
+flowchart TD
+    START(["START"]) --> GA
+
+    subgraph graph["Compiled graph (DraftState + SQLite checkpointer)"]
+        GA["gather_agent<br/>LLM bound to read tools"]
+        TN["tools (ToolNode)<br/>get_thread · search_related · get_style_examples"]
+        AU["ask_user<br/>interrupt({question})"]
+        DR["draft<br/>unbound LLM composes the reply"]
+        SD["save_draft<br/>create_draft"]
+
+        GA -->|"tool_calls present"| TN
+        TN -->|"ToolMessages"| GA
+        GA -->|"no tool_calls<br/>or MAX_AGENT_STEPS hit"| AU
+        AU --> DR
+        DR --> SD
+    end
+
+    AU -. "interrupt: pause + persist state" .-> PAUSE{{"paused<br/>awaiting user answer"}}
+    PAUSE -. "resume({answer})" .-> DR
+    SD --> END(["END → {text, gmail_draft_id}"])
+
+    GA -. "ainvoke" .-> OAI[["OpenAI"]]
+    DR -. "ainvoke" .-> OAI
+    TN -. "via Gmail tools layer" .-> GM[["Gmail API"]]
+    SD -. "via Gmail tools layer" .-> GM
+    CP[("SQLite checkpointer<br/>state saved at every step")] -. "persists" .- graph
+
+    classDef ext fill:#eee,stroke:#999,color:#333;
+    class OAI,GM ext;
+```
+
+State (`DraftState`): `messages`, `gmail_thread_id`, `user_context` (the answer; `None` =
+skipped), `draft`, `gmail_draft_id`, `gather_steps`. Tool wrappers inject the trusted
+`user_id`/`thread_id` from run config + state, so the model never supplies identity.
+`start_run` drives the graph to the `interrupt`; `resume_run` supplies the answer and runs
+to `END`.
 
 ## Request flow (Contract D)
 
