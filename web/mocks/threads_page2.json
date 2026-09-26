@@ -1,0 +1,104 @@
+{
+  "threads": [
+    {
+      "id": "18c2f0a1b2c31025",
+      "subject": "Re: Pricing for the 50 seat tier",
+      "from_name": "Daniel Kim",
+      "from_email": "dkim@hallow.tech",
+      "snippet": "Is there room to move on the annual number?",
+      "message_count": 1,
+      "last_message_at": "2026-09-13T01:42:00Z"
+    },
+    {
+      "id": "18c2f0a1b2c31026",
+      "subject": "Partnership intro",
+      "from_name": "Leila Haddad",
+      "from_email": "leila@sunspire.org",
+      "snippet": "Happy to connect you with our platform team.",
+      "message_count": 2,
+      "last_message_at": "2026-09-12T18:42:00Z"
+    },
+    {
+      "id": "18c2f0a1b2c31027",
+      "subject": "Bug: drafts not saving",
+      "from_name": "Chris Doyle",
+      "from_email": "chris@paperclip.app",
+      "snippet": "Two users reported drafts vanishing after a refresh.",
+      "message_count": 3,
+      "last_message_at": "2026-09-12T11:42:00Z"
+    },
+    {
+      "id": "18c2f0a1b2c31028",
+      "subject": "Re: Q4 roadmap review",
+      "from_name": "Meera Iyer",
+      "from_email": "meera@quanta.co",
+      "snippet": "Can we move the review to Thursday morning?",
+      "message_count": 4,
+      "last_message_at": "2026-09-12T04:42:00Z"
+    },
+    {
+      "id": "18c2f0a1b2c31029",
+      "subject": "Re: Security questionnaire",
+      "from_name": "Jon Alvarez",
+      "from_email": "jon@lattice.works",
+      "snippet": "We need SOC2 answers before procurement signs off.",
+      "message_count": 5,
+      "last_message_at": "2026-09-11T21:42:00Z"
+    },
+    {
+      "id": "18c2f0a1b2c31030",
+      "subject": "Q3 vendor quote",
+      "from_name": "Priya Nair",
+      "from_email": "priya@acme.com",
+      "snippet": "Can you confirm the revised numbers by Friday?",
+      "message_count": 1,
+      "last_message_at": "2026-09-11T14:42:00Z"
+    },
+    {
+      "id": "18c2f0a1b2c31031",
+      "subject": "Re: Integration timeline",
+      "from_name": "Rahul Mehta",
+      "from_email": "rahul.mehta@northwind.io",
+      "snippet": "We are blocked on the sandbox credentials.",
+      "message_count": 2,
+      "last_message_at": "2026-09-11T07:42:00Z"
+    },
+    {
+      "id": "18c2f0a1b2c31032",
+      "subject": "Contract renewal - next steps",
+      "from_name": "Sara Lopez",
+      "from_email": "sara@brightlabs.co",
+      "snippet": "Legal came back with two redlines on clause 7.",
+      "message_count": 3,
+      "last_message_at": "2026-09-11T00:42:00Z"
+    },
+    {
+      "id": "18c2f0a1b2c31033",
+      "subject": "Re: Invoice #4821 overdue",
+      "from_name": "Tom Becker",
+      "from_email": "tom.becker@vendorly.com",
+      "snippet": "Our records show the invoice is 12 days past due.",
+      "message_count": 4,
+      "last_message_at": "2026-09-10T17:42:00Z"
+    },
+    {
+      "id": "18c2f0a1b2c31034",
+      "subject": "Demo feedback from the team",
+      "from_name": "Aditi Sharma",
+      "from_email": "aditi@zentro.in",
+      "snippet": "Three folks asked whether SSO is on the roadmap.",
+      "message_count": 5,
+      "last_message_at": "2026-09-10T10:42:00Z"
+    },
+    {
+      "id": "18c2f0a1b2c31035",
+      "subject": "Speaking slot - Oct meetup",
+      "from_name": "Marcus Cole",
+      "from_email": "marcus@fieldnotes.dev",
+      "snippet": "Would you be up for a 20 minute talk on agents?",
+      "message_count": 1,
+      "last_message_at": "2026-09-10T03:42:00Z"
+    }
+  ],
+  "next_page_token": null
+}

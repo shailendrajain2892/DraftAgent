@@ -1,0 +1,18 @@
+{
+  "questions": {
+    "18c2f0a1b2c31000": "This asks for revised numbers. Do you want to include a price or a date?",
+    "18c2f0a1b2c31001": "Rahul is blocked on sandbox credentials. Do you have an ETA I should commit to?",
+    "default": "Anything to add before I draft this?"
+  },
+  "drafts": {
+    "18c2f0a1b2c31000": {
+      "with_answer": "Hi Priya,\n\nThanks for the follow-up. {{answer}}\n\nI will send the revised sheet across before Friday so the approval can be re-run in time.\n\nBest,\nAntim",
+      "without_answer": "Hi Priya,\n\nThanks for the follow-up. I am finalising the revised numbers and will send the updated sheet before Friday so the approval can be re-run in time.\n\nBest,\nAntim"
+    },
+    "default": {
+      "with_answer": "Hi,\n\nThanks for the note. {{answer}}\n\nI will follow up with the details shortly.\n\nBest,\nAntim",
+      "without_answer": "Hi,\n\nThanks for the note - picking this up now and I will follow up with the details shortly.\n\nBest,\nAntim"
+    }
+  },
+  "gmail_draft_id": "r-8812345"
+}

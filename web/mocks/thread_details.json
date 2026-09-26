@@ -1,0 +1,49 @@
+{
+  "18c2f0a1b2c31000": {
+    "id": "18c2f0a1b2c31000",
+    "subject": "Q3 vendor quote",
+    "messages": [
+      {
+        "id": "18c2f0a1b2c31000-1",
+        "from": "Priya Nair <priya@acme.com>",
+        "to": ["antim@example.com"],
+        "date": "2026-09-18T09:05:00Z",
+        "body_text": "Hi Antim,\n\nFollowing up on the quote we discussed last week. The finance team wants the Q3 numbers locked before the board pack goes out.\n\nThanks,\nPriya"
+      },
+      {
+        "id": "18c2f0a1b2c31000-2",
+        "from": "Antim Jain <antim@example.com>",
+        "to": ["priya@acme.com"],
+        "date": "2026-09-18T09:40:00Z",
+        "body_text": "Hi Priya,\n\nThanks for the nudge. I am waiting on one input from our supplier and should have the revised sheet by tomorrow."
+      },
+      {
+        "id": "18c2f0a1b2c31000-3",
+        "from": "Priya Nair <priya@acme.com>",
+        "to": ["antim@example.com"],
+        "date": "2026-09-18T10:42:00Z",
+        "body_text": "Thanks for the call earlier. Can you confirm the revised numbers by Friday? If the discount changes we need to re-run the approval."
+      }
+    ]
+  },
+  "18c2f0a1b2c31001": {
+    "id": "18c2f0a1b2c31001",
+    "subject": "Re: Integration timeline",
+    "messages": [
+      {
+        "id": "18c2f0a1b2c31001-1",
+        "from": "Rahul Mehta <rahul.mehta@northwind.io>",
+        "to": ["antim@example.com", "team@example.com"],
+        "date": "2026-09-17T14:12:00Z",
+        "body_text": "We are blocked on the sandbox credentials. Our engineers have been idle for two days and the pilot date is at risk."
+      },
+      {
+        "id": "18c2f0a1b2c31001-2",
+        "from": "Rahul Mehta <rahul.mehta@northwind.io>",
+        "to": ["antim@example.com"],
+        "date": "2026-09-18T08:01:00Z",
+        "body_text": "Any update? Happy to jump on a quick call if that is faster."
+      }
+    ]
+  }
+}
