@@ -1,0 +1,25 @@
+name: Deploy
+
+# Continuous deployment: every push to main ships the backend to Fly.io.
+# Requires the repo secret FLY_API_TOKEN (a Fly deploy token).
+on:
+  push:
+    branches: [main]
+
+jobs:
+  deploy:
+    name: fly deploy
+    runs-on: ubuntu-latest
+    concurrency:
+      group: deploy-main   # never run two deploys at once
+      cancel-in-progress: false
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: superfly/flyctl-actions/setup-flyctl@master
+      - name: Deploy
+        run: flyctl deploy --remote-only
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
