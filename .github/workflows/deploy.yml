@@ -5,6 +5,7 @@ name: Deploy
 on:
   push:
     branches: [main]
+  workflow_dispatch:   # allow manual redeploys from the Actions tab
 
 jobs:
   deploy:
