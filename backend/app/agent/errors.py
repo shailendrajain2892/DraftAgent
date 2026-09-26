@@ -1,7 +1,16 @@
-"""Shared error types for the agent (Spec 03), re-exported from ``app.agent``.
+"""Agent error types — now aliased to the backend's canonical ``app.errors``.
 
-Provisional until the backend lands its canonical module; keep identity
-(no re-subclasses) so ``isinstance`` checks survive the eventual move.
+This module originally defined its own provisional error classes. Per its own note
+("keep identity so ``isinstance`` checks survive the eventual move"), the backend
+canonical module has landed, so these names now *are* the backend classes. That makes
+error handling work across the boundary in both directions:
+
+- Backend tools raise ``app.errors.AuthExpiredError`` / ``GmailRateLimited`` — the
+  agent's ``isinstance`` checks in ``wrappers``/``graph`` now match them, so a real
+  401/429 is handled instead of being swallowed as a 502.
+- Errors escaping ``start_run``/``resume_run`` are ``DraftAgentError`` subclasses, so
+  the backend's existing exception handler maps them to Contract A codes with no extra
+  wiring.
 
 Backend HTTP mapping:
 
@@ -17,43 +26,52 @@ DraftGenerationError         502 UPSTREAM_ERROR
 ===========================  ==========================================
 """
 
-# Identical for unknown, malformed and wrong-owner run ids — callers cannot
-# probe which check failed.
+from __future__ import annotations
+
+# Re-exported backend classes (aliased to agent-facing names). Listed in __all__ so the
+# renamed aliases are recognised as intentional re-exports, not dead imports.
+from ..errors import (
+    AuthExpiredError,
+    UpstreamError,
+)
+from ..errors import (
+    GmailRateLimited as GmailRateLimitedError,
+)
+from ..errors import (
+    NotFound as RunNotFoundError,
+)
+from ..errors import (
+    RunStateConflict as RunStateConflictError,
+)
+
+# Identical for unknown, malformed and wrong-owner run ids — callers cannot probe
+# which check failed.
 NOT_FOUND_MESSAGE = "Run not found."
 
 
-class AuthExpiredError(Exception):
-    """Gmail credentials expired/revoked. Escapes the graph unchanged."""
+class DraftGenerationError(UpstreamError):
+    """Draft model output was empty/whitespace or contained tool_calls. -> 502."""
 
 
-class GmailRateLimitedError(Exception):
-    """Gmail quota exceeded.
-
-    Fatal when raised by ``create_draft`` at save time (backend -> 429).
-    Recoverable on the read path: sanitized into tool text for the model;
-    if the model recovers, the run completes and no 429 is produced.
-    """
+class SaveDraftError(UpstreamError):
+    """create_draft returned no gmail_draft_id, or a non-quota save failed. -> 502."""
 
 
 class AgentToolError(Exception):
     """Recoverable read-tool failure whose message is already sanitized.
 
-    The ToolNode error callback returns ``str(e)`` as ToolMessage content —
-    the wrapper raises it with a message only, no tool_call_id scope.
+    Never escapes to HTTP — the ToolNode error callback returns ``str(e)`` as
+    ToolMessage content. Stays a plain Exception on purpose.
     """
 
 
-class DraftGenerationError(Exception):
-    """Draft model output was empty/whitespace or contained tool_calls."""
-
-
-class SaveDraftError(Exception):
-    """create_draft returned no gmail_draft_id, or a non-quota save failed."""
-
-
-class RunNotFoundError(Exception):
-    """Unknown, malformed or wrong-owner run id. Message is non-disclosing."""
-
-
-class RunStateConflictError(Exception):
-    """Resume attempted on a run that is not waiting for an answer."""
+__all__ = [
+    "AuthExpiredError",
+    "GmailRateLimitedError",
+    "RunNotFoundError",
+    "RunStateConflictError",
+    "DraftGenerationError",
+    "SaveDraftError",
+    "AgentToolError",
+    "NOT_FOUND_MESSAGE",
+]

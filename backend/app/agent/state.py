@@ -4,8 +4,9 @@ Top-level langgraph import: if langgraph is missing this fails loudly with a
 clear ImportError naming the package — there is no silent fallback anywhere.
 """
 
-from langgraph.graph import MessagesState
 from typing import TypedDict
+
+from langgraph.graph import MessagesState
 
 
 class DraftState(MessagesState):
@@ -33,7 +34,7 @@ Message = TypedDict("Message", {
     "body_text": str,     # cleaned plain text
 })
 
-Thread = TypedDict("Thread", {
+Thread = TypedDict("Thread", {  # noqa: UP013  (functional form kept to match Message)
     "id": str,
     "subject": str,
     "messages": list[Message],  # oldest first

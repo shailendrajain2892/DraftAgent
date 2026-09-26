@@ -1,8 +1,9 @@
 """FastAPI app factory: session middleware, CORS, routers, error handlers, static UI.
 
 Contract D wiring: the agent module and compiled graph are built once at startup and
-stored on `app.state` for the runs router. Swap `agent.stub` for Yashshree's real module
-(`app.agent.graph`) when it lands — the import is the only line that changes.
+stored on `app.state` for the runs router. When an OpenAI key is configured we use the
+real LangGraph agent (`app.agent.graph`) driven by the Gmail tools; otherwise we fall
+back to `app.agent.stub` (used by contract tests / keyless environments).
 """
 
 from __future__ import annotations
@@ -16,23 +17,33 @@ from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
 from starlette.middleware.sessions import SessionMiddleware
 
-from .agent import stub as agent_module
 from .api import auth, runs, style, threads
 from .config import get_settings
 from .errors import DraftAgentError, draftagent_exception_handler, error_body
 
 
-def _build_graph(settings):
-    """Build the compiled graph with a SQLite checkpointer if the agent extra is present."""
-    checkpointer = None
-    try:
-        from langgraph.checkpoint.sqlite import SqliteSaver
+def _select_agent(settings):
+    """Return (agent_module, compiled_graph) for Contract D.
 
-        os.makedirs(os.path.dirname(settings.checkpointer_db) or ".", exist_ok=True)
-        checkpointer = SqliteSaver.from_conn_string(settings.checkpointer_db)
-    except Exception:  # noqa: BLE001 - stub graph works without a checkpointer
-        checkpointer = None
-    return agent_module.build_graph(tools=None, llm=None, checkpointer=checkpointer)
+    Real agent when OPENAI_API_KEY is set: the Gmail tools module IS the Contract B
+    ToolClient (matching call signatures), and the LLM is a ChatOpenAI. Otherwise the
+    stub, which needs no LLM.
+    """
+    if settings.openai_api_key:
+        from langchain_openai import ChatOpenAI
+
+        from .agent import graph as agent_module
+        from .tools import gmail_tools
+
+        llm = ChatOpenAI(model=settings.openai_chat_model, api_key=settings.openai_api_key)
+        # checkpointer=None -> the graph uses an in-memory saver (paused runs are lost on
+        # restart, acceptable for the MVP). Swap in an async SQLite saver via lifespan later.
+        compiled = agent_module.build_graph(tools=gmail_tools, llm=llm, checkpointer=None)
+        return agent_module, compiled
+
+    from .agent import stub as agent_module
+
+    return agent_module, agent_module.build_graph(tools=None, llm=None, checkpointer=None)
 
 
 def create_app() -> FastAPI:
@@ -57,8 +68,7 @@ def create_app() -> FastAPI:
         )
 
     # Contract D wiring.
-    app.state.agent = agent_module
-    app.state.graph = _build_graph(settings)
+    app.state.agent, app.state.graph = _select_agent(settings)
 
     # Error handlers (Contract A shape).
     app.add_exception_handler(DraftAgentError, draftagent_exception_handler)

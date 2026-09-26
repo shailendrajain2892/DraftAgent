@@ -13,7 +13,10 @@ from __future__ import annotations
 import copy
 from typing import Any, Protocol, runtime_checkable
 
-from .errors import AgentToolError, SaveDraftError  # noqa: F401  (SaveDraftError re-export for convenience)
+from .errors import (  # noqa: F401  (SaveDraftError re-export for convenience)
+    AgentToolError,
+    SaveDraftError,
+)
 
 USER_ID = "me@example.com"
 
