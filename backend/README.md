@@ -68,18 +68,19 @@ uv run ruff check .
 
 ## Deploy (Fly.io)
 
-Deployed as a single machine with a persistent volume. Config is in `Dockerfile` and
-`fly.toml`. Live: https://draftagent-backend.fly.dev
+Single machine with a persistent volume. The image (root `Dockerfile`, multi-stage)
+builds the React UI and serves it from FastAPI (same origin, no CORS). Deploy config
+(`Dockerfile`, `fly.toml`) lives at the **repo root**, not in `backend/`.
+Live: https://draftagent-backend.fly.dev
 
-First-time setup:
+First-time setup (run from the repo root):
 
 ```bash
-cd backend
 flyctl apps create <unique-app-name>          # or reuse draftagent-backend
 flyctl volumes create draftagent_data --region sin --size 1
-# secrets (never committed): pull the sensitive ones from .env, add prod redirect + session
+# secrets (never committed): pull the sensitive ones from backend/.env, add prod redirect + session
 {
-  grep -E '^(GOOGLE_CLIENT_ID|GOOGLE_CLIENT_SECRET|OPENAI_API_KEY|OPENAI_CHAT_MODEL|OPENAI_EMBED_MODEL)=' .env
+  grep -E '^(GOOGLE_CLIENT_ID|GOOGLE_CLIENT_SECRET|OPENAI_API_KEY|OPENAI_CHAT_MODEL|OPENAI_EMBED_MODEL)=' backend/.env
   echo "OAUTH_REDIRECT_URI=https://<app>.fly.dev/auth/google/callback"
   echo "SESSION_SECRET=$(openssl rand -hex 32)"
 } | flyctl secrets import
@@ -87,12 +88,16 @@ flyctl deploy --remote-only
 ```
 
 Then add `https://<app>.fly.dev/auth/google/callback` to the Google OAuth client's
-authorized redirect URIs. Redeploy anytime with `flyctl deploy --remote-only`.
+authorized redirect URIs. Every push to `main` auto-deploys (`.github/workflows/deploy.yml`);
+redeploy manually with `flyctl deploy --remote-only` from the repo root.
 
 Notes specific to this app:
 - One machine / one worker on purpose — sessions and tokens are in memory.
 - `STYLE_STORE_DIR` and the SQLite checkpointer live on the `/data` volume so they
   survive redeploys. `COOKIE_SECURE=true` in prod (set in `fly.toml`).
+- The UI is built with `VITE_USE_MOCKS=false` so it talks to this backend same-origin.
+  Locally, FastAPI serves `web/dist` if present (`WEB_DIST` overrides the path); run the
+  UI dev server separately (`cd web && npm run dev`) for hot reload via the Vite proxy.
 
 ## Notes
 

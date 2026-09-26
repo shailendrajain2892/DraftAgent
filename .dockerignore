@@ -1,0 +1,14 @@
+# Build context is the repo root. Keep the image lean and reproducible.
+**/node_modules
+**/.venv
+**/.data
+**/__pycache__
+**/*.pyc
+**/.pytest_cache
+**/.ruff_cache
+backend/.env
+web/.env
+web/dist            # rebuilt fresh in the node stage
+backend/tests
+**/uv.lock
+.git
