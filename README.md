@@ -19,6 +19,8 @@ writes the reply — saved to Gmail as a **draft** (never sent automatically).
 
 ## Architecture
 
+Interactive version (Lucid): https://lucid.app/lucidchart/eab9c7be-5262-4fb7-87fb-cd6c1b5a605b/view
+
 ```mermaid
 flowchart TD
     subgraph Browser

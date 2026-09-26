@@ -4,6 +4,9 @@ This document describes the system as built. The authoritative contracts live in
 [`specs/00_shared_overview_and_contracts.md`](specs/00_shared_overview_and_contracts.md);
 per-component detail is in `specs/01`–`04`.
 
+Interactive architecture diagram (Lucid, icon-based):
+https://lucid.app/lucidchart/eab9c7be-5262-4fb7-87fb-cd6c1b5a605b/view
+
 ## Components
 
 | Component | Where | Responsibility |
