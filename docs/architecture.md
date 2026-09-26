@@ -45,31 +45,31 @@ stateDiagram-v2
 
 ```mermaid
 flowchart TD
-    START(["START"]) --> GA
+    STARTN(["START"]) --> GA
 
-    subgraph graph["Compiled graph (DraftState + SQLite checkpointer)"]
+    subgraph compiled["Compiled graph (DraftState + SQLite checkpointer)"]
         GA["gather_agent<br/>LLM bound to read tools"]
-        TN["tools (ToolNode)<br/>get_thread · search_related · get_style_examples"]
-        AU["ask_user<br/>interrupt({question})"]
+        TN["tools (ToolNode)<br/>get_thread / search_related / get_style_examples"]
+        AU["ask_user<br/>interrupt(question)"]
         DR["draft<br/>unbound LLM composes the reply"]
         SD["save_draft<br/>create_draft"]
 
         GA -->|"tool_calls present"| TN
         TN -->|"ToolMessages"| GA
-        GA -->|"no tool_calls<br/>or MAX_AGENT_STEPS hit"| AU
+        GA -->|"no tool_calls / cap hit"| AU
         AU --> DR
         DR --> SD
     end
 
-    AU -. "interrupt: pause + persist state" .-> PAUSE{{"paused<br/>awaiting user answer"}}
-    PAUSE -. "resume({answer})" .-> DR
-    SD --> END(["END → {text, gmail_draft_id}"])
+    AU -. "interrupt: pause + persist" .-> PAUSE{{"paused — awaiting answer"}}
+    PAUSE -. "resume(answer)" .-> DR
+    SD --> FIN(["END: text + gmail_draft_id"])
 
     GA -. "ainvoke" .-> OAI[["OpenAI"]]
     DR -. "ainvoke" .-> OAI
-    TN -. "via Gmail tools layer" .-> GM[["Gmail API"]]
-    SD -. "via Gmail tools layer" .-> GM
-    CP[("SQLite checkpointer<br/>state saved at every step")] -. "persists" .- graph
+    TN -. "Gmail tools layer" .-> GM[["Gmail API"]]
+    SD -. "Gmail tools layer" .-> GM
+    CP[("SQLite checkpointer<br/>state saved each step")] -. "persists" .- compiled
 
     classDef ext fill:#eee,stroke:#999,color:#333;
     class OAI,GM ext;
