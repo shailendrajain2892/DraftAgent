@@ -2,8 +2,12 @@
 
 from __future__ import annotations
 
+import logging
+
 from fastapi import Request
 from fastapi.responses import JSONResponse
+
+_log = logging.getLogger("draftagent")
 
 
 class DraftAgentError(Exception):
@@ -64,7 +68,12 @@ def error_body(code: str, message: str) -> dict:
     return {"error": {"code": code, "message": message}}
 
 
-async def draftagent_exception_handler(_: Request, exc: DraftAgentError) -> JSONResponse:
+async def draftagent_exception_handler(request: Request, exc: DraftAgentError) -> JSONResponse:
+    # Log the mapped domain error so the real reason (e.g. the Gmail message) is visible.
+    # `exc.message` is our own controlled text — no email bodies or tokens.
+    log = _log.warning if exc.http_status < 500 else _log.error
+    log("%s %s -> %s %s: %s", request.method, request.url.path, exc.http_status, exc.code,
+        exc.message)
     return JSONResponse(
         status_code=exc.http_status,
         content=error_body(exc.code, exc.message),

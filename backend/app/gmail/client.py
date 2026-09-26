@@ -92,8 +92,21 @@ def _http_reason(exc: HttpError) -> str:
     return str(reason) if reason else "unknown"
 
 
+# Gmail returns rate limiting as HTTP 403 with one of these reasons (not always 429).
+_RATE_LIMIT_REASONS = {"ratelimitexceeded", "userratelimitexceeded", "rate_limit_exceeded"}
+
+
+def _is_rate_limited(status: int | None, exc: HttpError) -> bool:
+    if status == 429:
+        return True
+    if status == 403:
+        return _http_reason(exc).lower() in _RATE_LIMIT_REASONS
+    return False
+
+
 def _execute_with_retry(user_id: str, request_factory: Callable[[], Any]) -> Any:
-    """Execute a googleapiclient request with retry on 429/5xx.
+    """Execute a googleapiclient request with retry on rate limits (429 / 403 rate-limit)
+    and 5xx.
 
     `request_factory` returns a fresh request object each call so retries are clean.
     Each execute uses its own authorized Http so concurrent calls never share a
@@ -101,6 +114,7 @@ def _execute_with_retry(user_id: str, request_factory: Callable[[], Any]) -> Any
     """
     settings = get_settings()
     last_exc: Exception | None = None
+    rate_limited = False
     for attempt in range(settings.gmail_max_retries):
         try:
             return request_factory().execute(http=_fresh_http(user_id))
@@ -109,16 +123,16 @@ def _execute_with_retry(user_id: str, request_factory: Callable[[], Any]) -> Any
             status = int(status) if status is not None else None
             if status == 401:
                 raise AuthExpiredError() from exc
-            if status == 429 or (status is not None and 500 <= status < 600):
+            if _is_rate_limited(status, exc) or (status is not None and 500 <= status < 600):
                 last_exc = exc
+                rate_limited = _is_rate_limited(status, exc)
                 sleep = (2**attempt) + random.uniform(0, 0.5)
                 time.sleep(sleep)
                 continue
             reason = _http_reason(exc)
             raise UpstreamError(f"Gmail error {status}: {reason}") from exc
     # Retries exhausted.
-    status = getattr(getattr(last_exc, "resp", None), "status", None)
-    if status is not None and int(status) == 429:
+    if rate_limited:
         raise GmailRateLimited() from last_exc
     raise UpstreamError("Gmail failed after retries.") from last_exc
 
