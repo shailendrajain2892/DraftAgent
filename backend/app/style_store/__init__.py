@@ -1,8 +1,8 @@
-"""Stub style store package.
+"""Style store package (Contract C).
 
-The real RAG implementation is spec 04's owner. Until it lands we expose:
-- `clean_body`: a working text cleaner used by the Gmail tools.
-- `StyleStore`: a disk-backed stub matching Contract C so the seed job and tools run.
+- `clean_body`: text cleaner used by the Gmail tools.
+- `StyleStore`: disk-backed RAG over the user's past reply pairs — embeddings-based
+  retrieval (OpenAI), with keyword-overlap fallback when embeddings are unavailable.
 """
 
 from .clean import clean_body
