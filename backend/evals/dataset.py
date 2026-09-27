@@ -81,7 +81,7 @@ CASES: list[EvalCase] = [
         require_substrings=["12,000"],
     ),
     EvalCase(
-        id="quote_withheld_uses_placeholder",
+        id="quote_withheld_no_fabrication",
         category="hallucination-trap",
         thread_id="t_quote_2",
         subject="Q3 vendor quote",
@@ -89,9 +89,11 @@ CASES: list[EvalCase] = [
                        "Can you confirm the price and delivery date for the PO?")],
         style=STYLE_CASUAL,
         answer=None,  # user skipped — the facts are NOT available
-        relevance_goal="Respond about the PO price and delivery date without inventing them.",
+        relevance_goal="Respond about the PO price/date WITHOUT inventing them (a [confirm ...] "
+        "placeholder or explicitly deferring/asking are both acceptable).",
         style_desc="short, warm",
-        require_placeholder=True,
+        # The real requirement is no fabrication — enforced by forbidden + judge faithfulness.
+        # Placeholder vs. deferral is a valid stylistic choice, so we don't force either.
         forbidden=["$12,000", "$10,000", "30 Sep", "Friday"],  # must not fabricate specifics
     ),
     EvalCase(

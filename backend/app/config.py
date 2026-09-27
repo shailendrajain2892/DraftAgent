@@ -25,7 +25,7 @@ class Settings(BaseSettings):
 
     # OpenAI (used by the agent; backend just passes config through)
     openai_api_key: str = ""
-    openai_chat_model: str = "gpt-4o-mini"
+    openai_chat_model: str = "gpt-4o"
     openai_embed_model: str = "text-embedding-3-small"
 
     # Style store
