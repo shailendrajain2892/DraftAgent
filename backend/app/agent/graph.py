@@ -70,6 +70,18 @@ def _content_text(message) -> str:
     return "".join(parts)
 
 
+def _single_question(text: str) -> str:
+    """Enforce exactly one question: keep everything up to and including the first '?'.
+
+    The gather prompt asks for one question but a small model sometimes appends a second;
+    this guarantees the interrupt shows a single question.
+    """
+    text = (text or "").strip()
+    if text.count("?") <= 1:
+        return text
+    return text[: text.index("?") + 1].strip()
+
+
 def with_single_system(messages, system_text: str):
     """Prepend *system_text* exactly once — never duplicated in a loop."""
     return [SystemMessage(content=system_text)] + [
@@ -179,6 +191,7 @@ def build_graph(tools: ToolClient, llm, checkpointer):
                 if text := _content_text(message).strip():
                     question = text
                     break
+        question = _single_question(question)  # enforce exactly one question
         # resume=None is ambiguous in LangGraph — always the answer envelope.
         payload = interrupt({"question": question})
         if isinstance(payload, dict) and "answer" in payload:

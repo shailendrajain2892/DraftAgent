@@ -9,7 +9,7 @@ import pytest
 
 from app import errors as backend_errors
 from app.agent import errors as agent_errors
-from app.agent.graph import make_run_id, parse_run_id, validated_env_int
+from app.agent.graph import _single_question, make_run_id, parse_run_id, validated_env_int
 from app.agent.tool_client import (
     QUOTE_THREAD_ID,
     SCHEDULING_THREAD_ID,
@@ -37,6 +37,12 @@ def test_run_id_user_with_colon_is_preserved():
 @pytest.mark.parametrize("bad", ["", "nocolons", "a:b", "u:t:NOTHEX", "u:!!:abcd1234", 123, None])
 def test_parse_run_id_rejects_malformed(bad):
     assert parse_run_id(bad) is None
+
+
+def test_single_question_keeps_one():
+    assert _single_question("Anything to add?") == "Anything to add?"
+    assert _single_question("Context here. Want A? Or B?") == "Context here. Want A?"
+    assert _single_question("No question here").count("?") == 0
 
 
 # --------------------------------------------------------------------------- env int
