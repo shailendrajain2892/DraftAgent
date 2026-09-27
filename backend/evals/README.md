@@ -13,6 +13,31 @@ The runner drives the **real graph with the real OpenAI generator** but a
 **`FakeToolClient`**, so Gmail is deterministic/offline while the LLM output under test is
 real.
 
+## Comparative evaluation — keyword baseline vs. embeddings RAG
+
+The style store retrieves the user's most relevant past replies for the LLM to imitate, so
+retrieval quality drives tone-match. We benchmark the **simple baseline (keyword overlap)**
+against the **advanced approach (embeddings RAG)** on a labeled set — establishing the
+baseline first, then justifying the upgrade (`evals/compare_retrieval.py`).
+
+- **Setup:** 10 past reply pairs across 5 topics (billing, scheduling, pricing, support,
+  intro); 6 **paraphrased** queries (little literal word overlap). Same StyleStore code
+  path — baseline runs with embeddings removed (keyword fallback), RAG runs with OpenAI
+  embeddings. Recipient domain neutralized so it measures semantics, not the domain boost.
+- **Metrics:** Recall@1, Recall@3, MRR.
+
+| Approach | Recall@1 | Recall@3 | MRR |
+| --- | --- | --- | --- |
+| Keyword (baseline) | 0.33 | 0.33 | 0.45 |
+| **Embeddings RAG** | **1.00** | **1.00** | **1.00** |
+
+**Justified choice:** we ship **embeddings RAG**. Keyword overlap only matches when the
+query and a past reply share literal words, so it misses paraphrases ("how much for 50
+licenses?" never matches a "pricing" reply that says "quote"/"enterprise"). Embeddings
+match on meaning and rank the right topic first every time here. Keyword overlap is kept as
+an **offline fallback** for when embeddings are unavailable (no key / CI). Run it with
+`uv run python -m evals.compare_retrieval` (needs `OPENAI_API_KEY`).
+
 ## Run
 
 ```bash
