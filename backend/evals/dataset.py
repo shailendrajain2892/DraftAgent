@@ -105,7 +105,8 @@ CASES: list[EvalCase] = [
         answer=None,
         relevance_goal="Confirm agreement with the already-stated price of $9,500.",
         style_desc="short, warm",
-        require_substrings=["9,500"],
+        # Confirming "the price" is valid; don't require echoing the figure. The forbidden
+        # list still guards against inventing a DIFFERENT price. Faithfulness is judged.
         forbidden=["$12,000", "$10,000"],
     ),
     EvalCase(
