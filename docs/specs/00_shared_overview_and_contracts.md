@@ -10,7 +10,7 @@ If a contract here needs to change, edit this file in a PR and post in the Whats
 | Repo scaffold and web UI | `01_web_ui_spec.md` | Antim Jain |
 | FastAPI, Gmail MCP tools, CI/CD, API contracts | `02_backend_tools_cicd_spec.md` | Shailendra Jain |
 | LangGraph agent | `03_langgraph_agent_spec.md` | Yashshree Nigudkar |
-| Style store (RAG) | `04_style_store_rag_spec.md` | TBD (fourth team member) |
+| Style store (RAG) | `04_style_store_rag_spec.md` | Utkarsh |
 
 Diagrams (Lucid):
 - Architecture v3: https://lucid.app/lucidchart/0756efa9-e9d5-43f8-9be0-d14c3a8b0400/edit
