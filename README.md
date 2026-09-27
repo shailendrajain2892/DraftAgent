@@ -8,13 +8,13 @@ writes the reply — saved to Gmail as a **draft** (never sent automatically).
 
 ## Demo
 
-▶ **[Watch the demo](docs/demo/DraftAgent-ModernUI.mp4)** (click to play on GitHub)
+▶ **[Download the demo video](https://github.com/shailendrajain2892/DraftAgent/releases/download/demo-v1/DraftAgent-ModernUI.mp4)** (23 MB, MP4) — also on the [releases page](https://github.com/shailendrajain2892/DraftAgent/releases/tag/demo-v1); source in `docs/demo/`.
 
 <!--
-To show the video as an INLINE player on this page, edit this README on github.com and
-drag docs/demo/DraftAgent-ModernUI.mp4 (or the file from your Desktop) into the editor.
-GitHub uploads it and inserts a https://github.com/user-attachments/assets/... URL that
-renders as a real inline ▶ player. Replace the line above with that URL on its own line.
+INLINE PLAYER: GitHub does not inline-play committed videos, only uploaded attachments.
+To embed a player on this page: edit this README on github.com, drag
+Desktop/DraftAgent-Demo-small.mp4 (8.8MB) into the editor so GitHub returns a
+https://github.com/user-attachments/assets/... URL, then paste that URL on its own line here.
 -->
 
 Recording guide/script: [`docs/DEMO.md`](docs/DEMO.md). Interactive walkthroughs:
