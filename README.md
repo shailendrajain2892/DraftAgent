@@ -133,6 +133,47 @@ The components integrate through four contracts defined in
 - **UI:** React 18 + Vite
 - **Deploy:** Docker on Fly.io (single machine, persistent volume), GitHub Actions CI/CD
 
+Design doc: [`docs/DESIGN.md`](docs/DESIGN.md) (problem, architecture, eval criteria,
+framework justification).
+
+## Evaluation
+
+Two layers, detailed in [`backend/evals/README.md`](backend/evals/README.md):
+
+- **LLM-as-judge (gpt-4o)** scores faithfulness / relevance / tone (1–5) + **deterministic
+  assertions** for objective checks. Current suite: **8/8**, means **F 4.88 / R 4.75 / T 4.75**.
+- **Comparative retrieval** — keyword baseline vs embeddings RAG on a labeled set:
+  **MRR 0.45 → 1.00**; we ship RAG and keep keyword as an offline fallback.
+
+Deterministic checks run in CI on every PR; the judge suite is gated (`evals.yml`).
+
+## Failure analysis & pivots
+
+What we tried, what broke, and how we changed course:
+
+- **Baseline-first, then real.** We built against stubs/mocks first (a keyword style-store
+  stub, a stub agent), proved the end-to-end flow, then swapped in the real LangGraph agent
+  and embeddings RAG — avoiding architecture-first bias.
+- **Generator: gpt-4o-mini → gpt-4o.** The eval caught the mini model (a) **obeying a
+  prompt-injection** hidden in an email (drafted the injected word), (b) sometimes asking
+  **two** questions, (c) inconsistently using the withheld-fact placeholder. Fixes: a
+  `SECURITY` block prepended to both prompts, a **deterministic one-question guard** in
+  `ask_user`, and bumping the generator to **gpt-4o** → stable **8/8**.
+- **Retrieval: keyword → embeddings RAG.** The keyword baseline missed paraphrased queries
+  (MRR 0.45). The comparative eval justified moving to embeddings (MRR 1.00).
+- **Gmail client thread-safety.** Sharing one Gmail service across concurrent calls corrupted
+  the TLS stream (`SSL record layer failure`) during the seed burst → each request now uses
+  its own authorized HTTP connection.
+- **OAuth.** Token exchange failed on `localhost` (PKCE verifier lost across the callback +
+  non-HTTPS) → disabled PKCE for this confidential client and relaxed oauthlib transport in
+  dev. Also: Gmail rate-limits during seeding arrive as **HTTP 403**, which surfaced as a
+  502 → now retried like 429.
+- **Eval self-correction.** The suite flagged one of our **own assertions** as too strict
+  (requiring the literal price figure in a confirmation) — we relaxed it. The eval improved
+  the eval.
+- **Deploy rename.** Once the UI shipped in the same image, `draftagent-backend` was renamed
+  to **`draftagent`** (draftagent.fly.dev).
+
 ## Local development
 
 **Backend**
