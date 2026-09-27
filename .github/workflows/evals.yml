@@ -1,0 +1,31 @@
+name: Evals (judge)
+
+# Gated / manual: runs the LLM-judge eval suite (costs OpenAI calls). The deterministic
+# eval assertions run in the normal CI (tests/test_eval_assertions.py). Requires the repo
+# secret OPENAI_API_KEY.
+on:
+  workflow_dispatch:
+
+jobs:
+  evals:
+    name: judge suite
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v3
+      - run: uv venv --python 3.11
+      - run: uv pip install -e ".[dev]"
+      - name: Run evals
+        run: uv run python -m evals.run_eval --json eval_report.json
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          EVAL_JUDGE_MODEL: gpt-4o
+      - name: Upload report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: eval-report
+          path: backend/eval_report.json
