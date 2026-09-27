@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="DraftAgent">
+  <!-- A nib that is also a leaf: one closed curve, one stroke, one dot. -->
+  <rect width="64" height="64" rx="19" fill="#2F2823"/>
+  <path d="M32 13c11 9.5 15 18.5 15 25.2C47 47 40.3 53 32 53s-15-6-15-14.8C17 31.5 21 22.5 32 13z" fill="#BDD3B4"/>
+  <path d="M32 22v24" stroke="#2F2823" stroke-width="2.6" stroke-linecap="round"/>
+  <circle cx="32" cy="41" r="3.4" fill="#2F2823"/>
+</svg>

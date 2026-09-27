@@ -4,7 +4,7 @@ import react from '@vitejs/plugin-react'
 // Dev proxy: the UI runs on :5173 and forwards API calls to FastAPI on :8000,
 // so the draftagent_session cookie is same-origin in dev too.
 const backend = 'http://localhost:8000'
-const apiPaths = ['/auth', '/threads', '/style', '/runs', '/health']
+const apiPaths = ['/auth', '/threads', '/style', '/runs', '/healthz']
 
 export default defineConfig({
   plugins: [react()],

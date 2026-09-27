@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react'
 
-/** Dialog shell used by the question step and the draft review. */
-export function Modal({ title, children, onClose, labelledBy = 'modal-title' }) {
+/** Dialog shell: the pastel ribbon, the drift-in, Escape to close. */
+export function Modal({ title, children, onClose, wide = false, labelledBy = 'modal-title' }) {
   const panel = useRef(null)
 
   useEffect(() => {
@@ -16,11 +16,28 @@ export function Modal({ title, children, onClose, labelledBy = 'modal-title' }) 
 
   return (
     <div className="modal-backdrop">
-      <div className="modal" role="dialog" aria-modal="true" aria-labelledby={labelledBy} ref={panel} tabIndex={-1}>
-        <h2 className="modal-title" id={labelledBy}>
-          {title}
-        </h2>
-        {children}
+      <div
+        className={`modal${wide ? ' modal-wide' : ''}`}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby={labelledBy}
+        ref={panel}
+        tabIndex={-1}
+      >
+        <div className="modal-ribbon" aria-hidden="true">
+          <span />
+          <span />
+          <span />
+          <span />
+        </div>
+        <div className="modal-body">
+          {title ? (
+            <h2 className="modal-title" id={labelledBy}>
+              {title}
+            </h2>
+          ) : null}
+          {children}
+        </div>
       </div>
     </div>
   )

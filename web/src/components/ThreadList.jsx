@@ -1,4 +1,5 @@
 import { initials, shortTime } from '../utils/format.js'
+import { tintFor } from '../utils/tint.js'
 import { ErrorNotice } from './ErrorNotice.jsx'
 import { Spinner } from './Spinner.jsx'
 
@@ -42,7 +43,14 @@ export function ThreadList({
   }
 
   return (
-    <div className="thread-list">
+    <>
+      <div className="list-head">
+        <h2>Inbox</h2>
+        <span className="list-count">
+          {threads.length} thread{threads.length === 1 ? '' : 's'}
+        </span>
+      </div>
+
       <ul className="thread-rows">
         {threads.map((thread) => {
           const selected = thread.id === selectedId
@@ -55,7 +63,7 @@ export function ThreadList({
                 aria-current={selected ? 'true' : undefined}
                 aria-label={`${thread.from_name}: ${thread.subject}`}
               >
-                <span className="avatar" aria-hidden="true">
+                <span className="avatar" style={tintFor(thread.from_email || thread.from_name)}>
                   {initials(thread.from_name)}
                 </span>
                 <span className="thread-row-body">
@@ -63,16 +71,14 @@ export function ThreadList({
                     <span className="thread-sender">{thread.from_name}</span>
                     <span className="thread-time">{shortTime(thread.last_message_at)}</span>
                   </span>
-                  <span className="thread-subject">
-                    {thread.subject}
-                    {thread.message_count > 1 ? (
-                      <span className="msg-count" title={`${thread.message_count} messages`}>
-                        {thread.message_count}
-                      </span>
-                    ) : null}
-                  </span>
+                  <span className="thread-subject">{thread.subject}</span>
                   <span className="thread-snippet">{thread.snippet}</span>
                 </span>
+                {thread.message_count > 1 ? (
+                  <span className="msg-count" title={`${thread.message_count} messages`}>
+                    {thread.message_count}
+                  </span>
+                ) : null}
               </button>
             </li>
           )
@@ -88,6 +94,6 @@ export function ThreadList({
       ) : (
         <p className="list-end">That is everything from the last 30 days.</p>
       )}
-    </div>
+    </>
   )
 }
