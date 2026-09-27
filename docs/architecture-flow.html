@@ -1,0 +1,236 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>DraftAgent — How it works</title>
+<style>
+  :root{
+    --bg:#0d1117; --panel:#161b22; --line:#30363d; --muted:#8b949e; --text:#e6edf3;
+    --browser:#3b82f6; --backend:#7c6cff; --data:#0ca678; --external:#8b98a5;
+    --accent:#f5a623;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%;background:var(--bg);color:var(--text);
+    font:15px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
+  .app{display:grid;grid-template-columns:280px 1fr;grid-template-rows:auto 1fr auto;
+    grid-template-areas:"head head" "side stage" "side foot";height:100vh}
+  header{grid-area:head;padding:14px 22px;border-bottom:1px solid var(--line);
+    display:flex;align-items:center;gap:14px}
+  header h1{font-size:17px;margin:0;font-weight:650}
+  header .sub{color:var(--muted);font-size:13px}
+  header .live{margin-left:auto;color:var(--muted);font-size:12px}
+  header .live a{color:var(--browser);text-decoration:none}
+
+  aside{grid-area:side;border-right:1px solid var(--line);padding:14px;overflow:auto}
+  .steps{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px}
+  .steps li{padding:10px 12px;border:1px solid var(--line);border-radius:10px;cursor:pointer;
+    display:flex;gap:10px;align-items:center;transition:.15s;background:#0f141b}
+  .steps li:hover{border-color:#495364}
+  .steps li.active{border-color:var(--accent);background:#1c2029}
+  .steps li .n{width:22px;height:22px;border-radius:50%;background:#222b36;color:var(--muted);
+    display:grid;place-items:center;font-size:12px;flex:0 0 auto}
+  .steps li.active .n{background:var(--accent);color:#111}
+  .steps li .t{font-size:13px}
+  .steps li.done .n{background:var(--data);color:#062}
+
+  .stage{grid-area:stage;position:relative;overflow:hidden}
+  svg{width:100%;height:100%;display:block}
+
+  .node rect{fill:#111823;stroke:#2b3442;stroke-width:1.5;rx:12;transition:.25s}
+  .node .title{fill:var(--text);font-weight:650;font-size:15px}
+  .node .desc{fill:var(--muted);font-size:11.5px}
+  .node .tag{fill:var(--muted);font-size:10px;letter-spacing:.06em}
+  .node.browser rect{stroke:var(--browser)}
+  .node.backend rect{stroke:var(--backend)}
+  .node.data rect{stroke:var(--data)}
+  .node.external rect{stroke:var(--external)}
+  .node{opacity:.34;transition:opacity .25s, filter .25s}
+  .node.on{opacity:1}
+  .node.on rect{filter:drop-shadow(0 0 10px rgba(245,166,35,.35));stroke-width:2.5}
+
+  .edge{stroke:#2a3340;stroke-width:2;fill:none;opacity:.35;transition:.25s}
+  .edge.on{stroke:var(--accent);opacity:1;stroke-width:3;
+    stroke-dasharray:9 7;animation:flow 700ms linear infinite;marker-end:url(#arrow)}
+  @keyframes flow{to{stroke-dashoffset:-32}}
+
+  footer{grid-area:foot;border-top:1px solid var(--line);padding:14px 22px;
+    display:flex;gap:18px;align-items:flex-start}
+  .narr{flex:1}
+  .narr .badge{display:inline-block;font-size:11px;letter-spacing:.06em;text-transform:uppercase;
+    color:#111;background:var(--accent);padding:2px 8px;border-radius:20px;margin-bottom:6px}
+  .narr h2{margin:0 0 4px;font-size:16px}
+  .narr p{margin:0;color:var(--muted);max-width:70ch}
+  .narr .say{margin-top:6px;color:var(--text);font-style:italic}
+  .controls{display:flex;gap:8px;align-items:center;flex:0 0 auto}
+  button{background:#1c2431;color:var(--text);border:1px solid var(--line);border-radius:9px;
+    padding:9px 16px;font-size:14px;cursor:pointer}
+  button:hover{border-color:#5b6473}
+  button.primary{background:var(--accent);color:#111;border-color:var(--accent);font-weight:650}
+  button:disabled{opacity:.4;cursor:default}
+  .count{color:var(--muted);font-size:13px;min-width:44px;text-align:center}
+  .hint{position:absolute;bottom:10px;left:14px;color:#586172;font-size:11px}
+</style>
+</head>
+<body>
+<div class="app">
+  <header>
+    <h1>DraftAgent</h1>
+    <span class="sub">reads a Gmail thread → asks one question → drafts a reply in your voice (never sends)</span>
+    <span class="live">live: <a href="https://draftagent.fly.dev">draftagent.fly.dev</a></span>
+  </header>
+
+  <aside><ul class="steps" id="steps"></ul></aside>
+
+  <div class="stage">
+    <svg viewBox="0 0 1040 600" preserveAspectRatio="xMidYMid meet">
+      <defs>
+        <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+          <path d="M0,0 L10,5 L0,10 z" fill="var(--accent)"/>
+        </marker>
+      </defs>
+      <g id="edges"></g>
+      <g id="nodes"></g>
+    </svg>
+    <div class="hint">Use ← → or Space to advance · click a step on the left</div>
+  </div>
+
+  <footer>
+    <div class="narr">
+      <span class="badge" id="badge">Overview</span>
+      <h2 id="ntitle"></h2>
+      <p id="ndesc"></p>
+      <div class="say" id="nsay"></div>
+    </div>
+    <div class="controls">
+      <button id="prev">← Prev</button>
+      <span class="count" id="count"></span>
+      <button id="next" class="primary">Next →</button>
+    </div>
+  </footer>
+</div>
+
+<script>
+// ---- node layout (viewBox 1040 x 600) ----
+const W=210,H=84;
+const NODES={
+  ui:     {x:40,  y:40,  w:W, h:H, cls:"browser", tag:"BROWSER", title:"React UI", desc:"served by FastAPI"},
+  api:    {x:40,  y:250, w:W, h:H, cls:"backend", tag:"FASTAPI", title:"Backend API", desc:"auth · threads · runs"},
+  vol:    {x:40,  y:460, w:W, h:H, cls:"data",    tag:"VOLUME",  title:"/data volume", desc:"style + checkpoints"},
+  tools:  {x:415, y:40,  w:W, h:70,cls:"backend", tag:"CONTRACT B", title:"Gmail tools", desc:"only code that calls Gmail"},
+  agent:  {x:415, y:238, w:W, h:108,cls:"backend",tag:"LANGGRAPH", title:"Agent", desc:"gather → ask → draft → save"},
+  rag:    {x:415, y:474, w:W, h:70,cls:"data",    tag:"RAG",     title:"Style store", desc:"embeddings retrieval"},
+  google: {x:790, y:40,  w:W, h:H, cls:"external", tag:"GOOGLE", title:"OAuth + Gmail", desc:"external API"},
+  openai: {x:790, y:250, w:W, h:H, cls:"external", tag:"OPENAI", title:"OpenAI", desc:"LLM + embeddings"},
+};
+const c = n => ({x:NODES[n].x+NODES[n].w/2, y:NODES[n].y+NODES[n].h/2});
+const EDGES={
+  ui_api:["ui","api"], ui_google:["ui","google"], api_google:["api","google"],
+  api_tools:["api","tools"], api_agent:["api","agent"], agent_tools:["agent","tools"],
+  agent_openai:["agent","openai"], agent_ui:["agent","ui"], tools_google:["tools","google"],
+  tools_rag:["tools","rag"], rag_vol:["rag","vol"], rag_openai:["rag","openai"],
+};
+
+// ---- the story ----
+const STEPS=[
+  {badge:"Overview", title:"The system", nodes:["ui","api","agent","tools","rag","vol","google","openai"], edges:[],
+   desc:"One app on Fly.io: the React UI is served by the FastAPI backend, which drives a LangGraph agent. The agent reaches Gmail only through the tools layer, and personal style comes from a RAG store. Google and OpenAI are the external services.",
+   say:"“Here's DraftAgent end to end — one deployment, a LangGraph agent, and a RAG style store.”"},
+
+  {badge:"Step 1 · Connect", title:"Google OAuth", nodes:["ui","api","google"],
+   edges:["ui_api","api_google"],
+   desc:"You click Connect Gmail. The backend runs the OAuth flow with Google and, on callback, stores the token server-side and sets a session cookie. The browser never sees the token.",
+   say:"“I connect Gmail with Google OAuth — tokens stay server-side.”"},
+
+  {badge:"Step 2 · Background", title:"Seed job builds your style store", nodes:["api","tools","google","rag","openai","vol"],
+   edges:["api_tools","tools_google","tools_rag","rag_openai","rag_vol"],
+   desc:"Right after connect, a background job fetches your last 30 days of sent replies, embeds them with OpenAI, and saves the vectors to the RAG store on the persistent volume. This is how it learns your tone — it runs once and is reused.",
+   say:"“In the background it seeds a style store from my last 30 days of sent mail, embedded for retrieval.”"},
+
+  {badge:"Step 3 · Draft", title:"Pick a thread → start a run", nodes:["ui","api","agent"],
+   edges:["ui_api","api_agent"],
+   desc:"You pick a thread and hit Draft reply. The API calls the agent's start_run — the LangGraph run begins.",
+   say:"“I pick a thread and hit Draft reply, which starts the agent.”"},
+
+  {badge:"Step 4 · Gather", title:"Agent gathers context", nodes:["agent","tools","google","rag","openai"],
+   edges:["agent_tools","tools_google","tools_rag","agent_openai"],
+   desc:"The agent reads the thread and related history via the Gmail tools, and pulls your most similar past replies from the RAG store (cosine similarity). It reasons with the LLM to decide what, if anything, it still needs.",
+   say:"“It reads the thread and retrieves how I usually reply to messages like this.”"},
+
+  {badge:"Step 5 · Interrupt", title:"It asks exactly one question", nodes:["agent","ui"],
+   edges:["agent_ui"],
+   desc:"The graph pauses with a human-in-the-loop interrupt and returns one targeted question. State is checkpointed, so the paused run survives restarts.",
+   say:"“Before drafting, it pauses and asks me one clarifying question.”"},
+
+  {badge:"Step 6 · Answer", title:"You add context → resume", nodes:["ui","api","agent"],
+   edges:["ui_api","api_agent"],
+   desc:"You type an answer (or skip). resume_run continues the graph from where it paused.",
+   say:"“I give it the context it asked for, and it resumes.”"},
+
+  {badge:"Step 7 · Draft & save", title:"Compose in your voice → save to Gmail", nodes:["agent","openai","tools","google"],
+   edges:["agent_openai","agent_tools","tools_google"],
+   desc:"The LLM composes the reply using the thread, your answer, and your retrieved style. The agent saves it to Gmail as a draft via create_draft.",
+   say:"“It writes the reply in my style and saves it straight to Gmail Drafts.”"},
+
+  {badge:"Done", title:"Draft waiting in Gmail — never sent", nodes:["google","ui"],
+   edges:["tools_google","agent_ui"],
+   desc:"The draft is in your Gmail Drafts, shown back in the UI. Nothing is ever sent automatically — you review and send.",
+   say:"“The draft is in my inbox ready to review — the human always sends.”"},
+];
+
+// ---- render ----
+const gNodes=document.getElementById("nodes"), gEdges=document.getElementById("edges");
+const SVGNS="http://www.w3.org/2000/svg";
+for(const [id,e] of Object.entries(EDGES)){
+  const a=c(e[0]), b=c(e[1]);
+  const ln=document.createElementNS(SVGNS,"line");
+  ln.setAttribute("x1",a.x);ln.setAttribute("y1",a.y);
+  ln.setAttribute("x2",b.x);ln.setAttribute("y2",b.y);
+  ln.setAttribute("class","edge");ln.dataset.edge=id;
+  gEdges.appendChild(ln);
+}
+for(const [id,n] of Object.entries(NODES)){
+  const g=document.createElementNS(SVGNS,"g");
+  g.setAttribute("class","node "+n.cls);g.dataset.node=id;
+  g.innerHTML=`<rect x="${n.x}" y="${n.y}" width="${n.w}" height="${n.h}" rx="12"></rect>
+    <text class="tag" x="${n.x+14}" y="${n.y+22}">${n.tag}</text>
+    <text class="title" x="${n.x+14}" y="${n.y+ (n.h>90?52:46)}">${n.title}</text>
+    <text class="desc" x="${n.x+14}" y="${n.y+ (n.h>90?72:64)}">${n.desc}</text>`;
+  gNodes.appendChild(g);
+}
+const stepsEl=document.getElementById("steps");
+STEPS.forEach((s,i)=>{
+  const li=document.createElement("li");
+  li.innerHTML=`<span class="n">${i}</span><span class="t">${s.title}</span>`;
+  li.onclick=()=>go(i);stepsEl.appendChild(li);
+});
+
+let cur=0;
+function go(i){
+  cur=Math.max(0,Math.min(STEPS.length-1,i));
+  const s=STEPS[cur];
+  const on=new Set(s.nodes), onE=new Set(s.edges);
+  document.querySelectorAll(".node").forEach(n=>n.classList.toggle("on",on.has(n.dataset.node)));
+  document.querySelectorAll(".edge").forEach(e=>e.classList.toggle("on",onE.has(e.dataset.edge)));
+  [...stepsEl.children].forEach((li,idx)=>{
+    li.classList.toggle("active",idx===cur);
+    li.classList.toggle("done",idx<cur);
+  });
+  document.getElementById("badge").textContent=s.badge;
+  document.getElementById("ntitle").textContent=s.title;
+  document.getElementById("ndesc").textContent=s.desc;
+  document.getElementById("nsay").textContent=s.say;
+  document.getElementById("count").textContent=`${cur} / ${STEPS.length-1}`;
+  document.getElementById("prev").disabled=cur===0;
+  document.getElementById("next").disabled=cur===STEPS.length-1;
+}
+document.getElementById("next").onclick=()=>go(cur+1);
+document.getElementById("prev").onclick=()=>go(cur-1);
+document.addEventListener("keydown",e=>{
+  if(e.key==="ArrowRight"||e.key===" "){e.preventDefault();go(cur+1);}
+  if(e.key==="ArrowLeft"){e.preventDefault();go(cur-1);}
+});
+go(0);
+</script>
+</body>
+</html>
