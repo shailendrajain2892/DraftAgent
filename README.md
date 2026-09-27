@@ -6,6 +6,8 @@ writes the reply — saved to Gmail as a **draft** (never sent automatically).
 
 **Live:** https://draftagent.fly.dev
 
+**Demo:** see [`docs/DEMO.md`](docs/DEMO.md) for the recording guide/script _(video link: TBD)_.
+
 ---
 
 ## What it does
