@@ -35,10 +35,15 @@ scheduling (with related-thread history), acknowledgement, adversarial (prompt i
 tone (formal vs casual), and multi-message threads. Each case carries annotations that
 drive both layers.
 
-## Results (gen = gpt-4o-mini, judge = gpt-4o)
+## Results
 
-The first run scored **6 / 8** and surfaced three findings. After hardening the agent, the
-suite scores **7–8 / 8** (one case still flaps — see below), with judge means at/near 5.0.
+Progression:
+- gpt-4o-mini, before hardening: **6 / 8** (injection leak, multi-question, placeholder flap).
+- gpt-4o-mini, after hardening: **7–8 / 8** (placeholder still intermittent).
+- **gpt-4o (current generator): 8 / 8**, judge means F 4.88 / R 4.75 / T 4.75.
+
+The generator was bumped to `gpt-4o` (`OPENAI_CHAT_MODEL`) for reliable instruction
+following; the judge is also gpt-4o.
 
 ### Failure analysis + fixes
 
