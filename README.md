@@ -6,7 +6,20 @@ writes the reply — saved to Gmail as a **draft** (never sent automatically).
 
 **Live:** https://draftagent.fly.dev
 
-**Demo:** see [`docs/DEMO.md`](docs/DEMO.md) for the recording guide/script _(video link: TBD)_.
+## Demo
+
+▶ **[Watch the demo](docs/demo/DraftAgent-ModernUI.mp4)** (click to play on GitHub)
+
+<!--
+To show the video as an INLINE player on this page, edit this README on github.com and
+drag docs/demo/DraftAgent-ModernUI.mp4 (or the file from your Desktop) into the editor.
+GitHub uploads it and inserts a https://github.com/user-attachments/assets/... URL that
+renders as a real inline ▶ player. Replace the line above with that URL on its own line.
+-->
+
+Recording guide/script: [`docs/DEMO.md`](docs/DEMO.md). Interactive walkthroughs:
+[`docs/architecture-flow.html`](docs/architecture-flow.html) ·
+[`docs/eval-overview.html`](docs/eval-overview.html).
 
 ---
 
